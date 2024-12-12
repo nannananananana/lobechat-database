@@ -11,6 +11,7 @@ export const AgentRuntimeErrorType = {
 
   InvalidOllamaArgs: 'InvalidOllamaArgs',
   OllamaBizError: 'OllamaBizError',
+  QwenBizError: 'QwenBizError',
 
   InvalidBedrockCredentials: 'InvalidBedrockCredentials',
   StreamChunkError: 'StreamChunkError',

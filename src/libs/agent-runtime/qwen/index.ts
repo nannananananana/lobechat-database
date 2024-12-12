@@ -5,12 +5,20 @@ import Qwen from '@/config/modelProviders/qwen';
 
 import { LobeRuntimeAI } from '../BaseAI';
 import { AgentRuntimeErrorType } from '../error';
-import { ChatCompetitionOptions, ChatStreamPayload, ModelProvider } from '../types';
+import { 
+  ChatCompetitionOptions, 
+  ChatStreamPayload, 
+  ModelProvider,
+  Embeddings,
+  EmbeddingsPayload,
+  EmbeddingsOptions,
+} from '../types';
 import { AgentRuntimeError } from '../utils/createError';
 import { debugStream } from '../utils/debugStream';
 import { handleOpenAIError } from '../utils/handleOpenAIError';
 import { transformResponseToStream } from '../utils/openaiCompatibleFactory';
 import { StreamingResponse } from '../utils/response';
+// import { processDoubleData, QwenAIStream } from '../utils/streams';
 import { QwenAIStream } from '../utils/streams';
 
 const DEFAULT_BASE_URL = 'https://dashscope.aliyuncs.com/compatible-mode/v1';
@@ -28,7 +36,7 @@ export class LobeQwenAI implements LobeRuntimeAI {
   baseURL: string;
 
   constructor({
-    apiKey,
+    apiKey = process.env.QWEN_API_KEY,
     baseURL = DEFAULT_BASE_URL,
     ...res
   }: ClientOptions & Record<string, any> = {}) {
@@ -94,6 +102,29 @@ export class LobeQwenAI implements LobeRuntimeAI {
         endpoint: this.baseURL,
         error: errorResult,
         errorType,
+        provider: ModelProvider.Qwen,
+      });
+    }
+  }
+
+  // embeddings
+  async embeddings(
+    payload: EmbeddingsPayload,
+    options?: EmbeddingsOptions,
+  ): Promise<Embeddings[]> {
+    try {
+      const res = await this.client.embeddings.create(
+        { ...payload, user: options?.user },
+        { headers: options?.headers, signal: options?.signal },
+      );
+
+      return res.data.map((item) => item.embedding);
+    } catch (error) {
+      const e = error as { message: string; name: string; status_code: number };
+
+      throw AgentRuntimeError.chat({
+        error: { message: e.message, name: e.name, status_code: e.status_code },
+        errorType: AgentRuntimeErrorType.QwenBizError,
         provider: ModelProvider.Qwen,
       });
     }

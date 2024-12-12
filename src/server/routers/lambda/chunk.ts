@@ -15,6 +15,7 @@ import { keyVaults } from '@/libs/trpc/middleware/keyVaults';
 import { initAgentRuntimeWithUserPayload } from '@/server/modules/AgentRuntime';
 import { ChunkService } from '@/server/services/chunk';
 import { SemanticSearchSchema } from '@/types/rag';
+// import { modelConfigSelectors } from '@/store/user/selectors';
 
 const chunkProcedure = authedProcedure.use(keyVaults).use(async (opts) => {
   const { ctx } = opts;
@@ -108,7 +109,7 @@ export const chunkRouter = router({
     .mutation(async ({ ctx, input }) => {
       console.time('embedding');
       const agentRuntime = await initAgentRuntimeWithUserPayload(
-        ModelProvider.OpenAI,
+        ModelProvider.Qwen,
         ctx.jwtPayload,
       );
 
@@ -137,7 +138,7 @@ export const chunkRouter = router({
       if (!item || !item.embeddings) {
         // TODO: need to support customize
         const agentRuntime = await initAgentRuntimeWithUserPayload(
-          ModelProvider.OpenAI,
+          ModelProvider.Qwen,
           ctx.jwtPayload,
         );
 

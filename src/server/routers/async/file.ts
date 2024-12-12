@@ -89,13 +89,13 @@ export const fileRouter = router({
               requestArray,
               async (chunks, index) => {
                 const agentRuntime = await initAgentRuntimeWithUserPayload(
-                  ModelProvider.OpenAI,
+                  ModelProvider.Qwen,
                   ctx.jwtPayload,
                 );
 
                 const number = index + 1;
                 console.log(`执行第 ${number} 个任务`);
-
+                
                 console.time(`任务[${number}]: embeddings`);
 
                 const embeddings = await agentRuntime.embeddings({
@@ -104,7 +104,8 @@ export const fileRouter = router({
                   model: input.model,
                 });
                 console.timeEnd(`任务[${number}]: embeddings`);
-
+                
+                console.log("embeddings:",embeddings)
                 const items: NewEmbeddingsItem[] =
                   embeddings?.map((e, idx) => ({
                     chunkId: chunks[idx].id,
@@ -112,7 +113,7 @@ export const fileRouter = router({
                     fileId: input.fileId,
                     model: input.model,
                   })) || [];
-
+                
                 console.time(`任务[${number}]: insert db`);
                 await ctx.embeddingModel.bulkCreate(items);
                 console.timeEnd(`任务[${number}]: insert db`);
