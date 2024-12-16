@@ -9,14 +9,17 @@ import { EmbeddingModel } from '@/database/server/models/embedding';
 import { FileModel } from '@/database/server/models/file';
 import { MessageModel } from '@/database/server/models/message';
 import { knowledgeBaseFiles } from '@/database/schemas';
-import { ModelProvider } from '@/libs/agent-runtime';
+// import { ModelProvider } from '@/libs/agent-runtime';
 import { authedProcedure, router } from '@/libs/trpc';
 import { keyVaults } from '@/libs/trpc/middleware/keyVaults';
 import { initAgentRuntimeWithUserPayload } from '@/server/modules/AgentRuntime';
 import { ChunkService } from '@/server/services/chunk';
 import { SemanticSearchSchema } from '@/types/rag';
 // import { modelConfigSelectors } from '@/store/user/selectors';
-
+let defaultModelProvider = 'qwen';
+if (!!process.env.PROVIDER) {
+  defaultModelProvider = process.env.PROVIDER
+}
 const chunkProcedure = authedProcedure.use(keyVaults).use(async (opts) => {
   const { ctx } = opts;
 
@@ -109,7 +112,7 @@ export const chunkRouter = router({
     .mutation(async ({ ctx, input }) => {
       console.time('embedding');
       const agentRuntime = await initAgentRuntimeWithUserPayload(
-        ModelProvider.Qwen,
+        defaultModelProvider,
         ctx.jwtPayload,
       );
 
@@ -138,7 +141,7 @@ export const chunkRouter = router({
       if (!item || !item.embeddings) {
         // TODO: need to support customize
         const agentRuntime = await initAgentRuntimeWithUserPayload(
-          ModelProvider.Qwen,
+          defaultModelProvider,
           ctx.jwtPayload,
         );
 

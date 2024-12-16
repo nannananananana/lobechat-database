@@ -11,7 +11,7 @@ import { ChunkModel } from '@/database/server/models/chunk';
 import { EmbeddingModel } from '@/database/server/models/embedding';
 import { FileModel } from '@/database/server/models/file';
 import { NewChunkItem, NewEmbeddingsItem } from '@/database/schemas';
-import { ModelProvider } from '@/libs/agent-runtime';
+// import { ModelProvider } from '@/libs/agent-runtime';
 import { asyncAuthedProcedure, asyncRouter as router } from '@/libs/trpc/async';
 import { initAgentRuntimeWithUserPayload } from '@/server/modules/AgentRuntime';
 import { S3 } from '@/server/modules/S3';
@@ -23,6 +23,7 @@ import {
   IAsyncTaskError,
 } from '@/types/asyncTask';
 import { safeParseJSON } from '@/utils/safeParseJSON';
+// import { processDoubleData } from '@/libs/agent-runtime/utils/streams';
 
 const fileProcedure = asyncAuthedProcedure.use(async (opts) => {
   const { ctx } = opts;
@@ -83,13 +84,16 @@ export const fileRouter = router({
 
           const chunks = await ctx.chunkModel.getChunksTextByFileId(input.fileId);
           const requestArray = chunk(chunks, CHUNK_SIZE);
-
+          let defaultModelProvider = 'qwen';
+          if (!!process.env.PROVIDER) {
+            defaultModelProvider = process.env.PROVIDER
+          }
           try {
             await pMap(
               requestArray,
               async (chunks, index) => {
                 const agentRuntime = await initAgentRuntimeWithUserPayload(
-                  ModelProvider.Qwen,
+                  defaultModelProvider,
                   ctx.jwtPayload,
                 );
 
