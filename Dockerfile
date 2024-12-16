@@ -173,6 +173,8 @@ ENV NEXT_PUBLIC_S3_DOMAIN="" \
     S3_ENDPOINT="" \
     S3_SECRET_ACCESS_KEY=""
 
+# provider
+ENV PROVIDER=""
 # Model Variables
 ENV \
     # AI21
